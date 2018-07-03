@@ -13,7 +13,7 @@ CHANGELOG
 - fix bug with global logger
 - fix display of progress
 - new field "log_file_path"
-- changed default timeout = 1
+- changed default TIMEOUT = 1
 
 0.0.1
 -----
