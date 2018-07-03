@@ -1,5 +1,6 @@
 CHANGELOG
 =========
+
 0.2.0-rc
 -----
 - base class ArticleLoader
