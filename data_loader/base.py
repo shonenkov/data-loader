@@ -20,7 +20,7 @@ class ArticleLoader:
     LOAD = 'load'
     KILL = 'kill'
 
-    def __init__(self, *, year, host, url_template, save, path, timeout, queue_maxsize, n_processes,
+    def __init__(self, *, year, host, url_template, save, data_folder_path, timeout, queue_maxsize, n_processes,
                  log_file_path=None):
         """
         Base class for loading articles from resources, that have one day articles structure.
@@ -30,7 +30,7 @@ class ArticleLoader:
         :param str host: resource host
         :param str url_template: template for url, where articles are being. example: '/news/{year}/{month}/{day}/'
         :param bool save: True/False - save json or not
-        :param str path: abs path of directory for saving data
+        :param str data_folder_path: abs path of directory for saving data
         :param int timeout: timeout in seconds for waiting before requesting to server
         :param int queue_maxsize: maxsize of queue for tasks
         :param int n_processes: processes count
@@ -39,7 +39,7 @@ class ArticleLoader:
         """
         self.year = int(year)
         self.save = save
-        self.path = path
+        self.data_folder_path = data_folder_path
         self.host = host
         self.timeout = timeout
         self.n_processes = n_processes
@@ -61,8 +61,8 @@ class ArticleLoader:
 
         name = f'{self.NAME}{year}-{datetime.now().strftime("%H:%M:%S-%d.%m.%Y")}'
 
-        if path:
-            self.data_path = path
+        if data_folder_path:
+            self.data_path = data_folder_path
         else:
             self.data_path = join(self.base_path, name)
             if not exists(self.data_path) and save:
@@ -71,38 +71,14 @@ class ArticleLoader:
         self.log_path = log_file_path if log_file_path else join(
             self.base_path, f'{name}.log')
 
-    async def prepare_one_day_articles(self, soup,  year, month, day):
-        """
-        :return: list of dicts {'url': <url>, 'header': <header>}
-        """
-        raise NotImplementedError
-
-    async def get_article_text(self, soup):
-        """
-        :return: str text
-        """
-        raise NotImplementedError
-
     async def prepare(self):
         print(f'\nPreparing to load {self.NAME} {self.year}...')
 
-        all_dates = []
-        for day, month, year in it.product(range(1, 32), range(1, 13), range(self.year, self.year + 1)):
-            try:
-                if datetime(year=year, month=month, day=day) > datetime.now():
-                    raise ValueError
-            except ValueError:
-                continue
-            day = str(day) if len(str(day)) == 2 else f'0{day}'
-            month = str(month) if len(str(month)) == 2 else f'0{month}'
-            year = str(year)
-            all_dates.append([day, month, year])
-
+        all_dates = self._get_all_dates()
         self.preparing_end = len(all_dates)
 
         for day, month, year in all_dates:
             url = self.url_template.format(year=year, month=month, day=day)
-
             if url in self.url_cache:
                 self.preparing_progress += 1
                 continue
@@ -117,8 +93,6 @@ class ArticleLoader:
         self.loading_end = len(self.articles)
 
         for i, article in enumerate(self.articles):
-            # print(f'\r{progress} from {end} articles', end='')
-
             url = article['url']
             if url in self.url_cache:
                 self.loading_progress += 1
@@ -138,6 +112,12 @@ class ArticleLoader:
                 await self.get_load(*data)
             else:
                 break
+
+    async def prepare_one_day_articles(self, soup,  year, month, day):
+        """
+        :return: list of dicts {'url': <url>, 'header': <header>}
+        """
+        raise NotImplementedError
 
     async def get_prepare(self, url, year, month, day):
 
@@ -162,10 +142,17 @@ class ArticleLoader:
                 'text': ''
             })
 
-        print(f'\r{self.preparing_progress} from {self.preparing_end} days', end='')
-        if self.preparing_progress == self.preparing_end:
+        if self.preparing_progress < self.preparing_end:
+            print(f'\r{self.preparing_progress} from {self.preparing_end} days', end='')
+        elif self.preparing_progress == self.preparing_end:
             self.preparing_progress += 1
             print(f'\nPreparing {self.NAME} {self.year} finished!\n')
+
+    async def get_article_text(self, soup):
+        """
+        :return: str text
+        """
+        raise NotImplementedError
 
     async def get_load(self, url, i):
 
@@ -185,11 +172,12 @@ class ArticleLoader:
 
         if self.save:
             name = f'{uuid4()}.json'
-            self.save_json(self.articles[i], name)
+            self._save_json(self.articles[i], name)
             await self._log('INFO', f'Article with url "{url}" was saved as "{name}".')
 
-        print(f'\r{self.loading_progress} from {self.loading_end} articles', end='')
-        if self.loading_progress == self.loading_end:
+        if self.loading_progress < self.loading_end:
+            print(f'\r{self.loading_progress} from {self.loading_end} articles', end='')
+        elif self.loading_progress == self.loading_end:
             self.loading_progress += 1
             print(f'\nLoading {self.NAME} {self.year} finished!\n')
 
@@ -213,7 +201,21 @@ class ArticleLoader:
         with open(self.log_path, 'a+') as logger:
             logger.write(f'{status}:{msg}\n')
 
-    def save_json(self, article, name):
+    def _get_all_dates(self):
+        all_dates = []
+        for day, month, year in it.product(range(1, 32), range(1, 13), range(self.year, self.year + 1)):
+            try:
+                if datetime(year=year, month=month, day=day) > datetime.now():
+                    raise ValueError
+            except ValueError:
+                continue
+            day = str(day) if len(str(day)) == 2 else f'0{day}'
+            month = str(month) if len(str(month)) == 2 else f'0{month}'
+            year = str(year)
+            all_dates.append([day, month, year])
+        return all_dates
+
+    def _save_json(self, article, name):
         file = open(join(self.data_path, name), 'w')
         json.dump(article, file, ensure_ascii=False)
         file.close()

@@ -9,10 +9,11 @@ class BankiRuLoader(ArticleLoader):
     HOST = 'http://www.banki.ru'
     DEFAULT_URL_TEMPLATE = '/news/lenta/?d={day}&m={month}&y={year}'
 
-    def __init__(self, year, save=True, path=None, log_file_path=None, timeout=1, host=HOST,
+    def __init__(self, year, save=True, data_folder_path=None, log_file_path=None, timeout=1, host=HOST,
                  url_template=DEFAULT_URL_TEMPLATE, queue_maxsize=1, n_processes=1):
-        super().__init__(year=year, host=host, url_template=url_template, save=save, path=path, timeout=timeout,
-                         queue_maxsize=queue_maxsize, n_processes=n_processes, log_file_path=log_file_path)
+        super().__init__(year=year, host=host, url_template=url_template, save=save, data_folder_path=data_folder_path,
+                         timeout=timeout, queue_maxsize=queue_maxsize, n_processes=n_processes,
+                         log_file_path=log_file_path)
 
     async def prepare_one_day_articles(self, soup,  year, month, day):
         """

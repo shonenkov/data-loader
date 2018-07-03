@@ -7,6 +7,7 @@ CHANGELOG
 - multiprocessing
 - add lenta ru
 - add tests
+- rename "path" to "data_folder_path"
 
 0.1.0
 -----
