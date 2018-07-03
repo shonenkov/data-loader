@@ -10,7 +10,7 @@ install:
   - pip install coveralls
 
 script:
-  - pytest --cov-report= --cov=data_loader tests
+  - pytest --cov=data_loader tests
 
 after_success:
   - CI=true TRAVIS=true coveralls
