@@ -1,6 +1,6 @@
 # Data Loader #
 
-[![Build Status](https://api.travis-ci.org/shonenkov/data-loader.svg?branch=develop)](https://travis-ci.org/shonenkov/data-loader)
+[![Build Status](https://api.travis-ci.com/shonenkov/data-loader.svg?branch=develop)](https://travis-ci.com/shonenkov/data-loader)
 
 # Installing for version 0.0.1: #
 ```
