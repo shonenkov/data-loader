@@ -1,7 +1,30 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import re
 from setuptools import setup
+from setuptools.command.test import test
+
+
+tests_require = ['pytest==3.2.3', 'pytest-cov==2.5.1', 'coverage == 4.5.1', 'coveralls == 1.3.0']
+
+
+class PyTest(test):
+
+    user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
+
+    def initialize_options(self):
+        test.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        test.finalize_options(self)
+
+    def run_tests(self):
+        # import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
 
 
 def read(filename):
@@ -44,8 +67,12 @@ def get_version():
 setup(
     name='data-loader',
     version=get_version(),
+    author='Aleksei Shonenkov',
+    author_email='shonenkov@phystech.edu',
     description='Data loader.',
     packages=['data_loader'],
+    cmdclass={'test': PyTest},
+    tests_require=tests_require,
     install_requires=get_requirements(),
     dependency_links=get_links(),
     long_description=read('README.md'),
