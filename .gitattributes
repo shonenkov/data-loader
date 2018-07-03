@@ -1,0 +1,2 @@
+tests/resources/*/*/*.html filter=lfs diff=lfs merge=lfs -text
+tests/resources/*/*/*.txt filter=lfs diff=lfs merge=lfs -text
