@@ -7,7 +7,7 @@ python:
 
 install:
   - pip install -r requirements-dev.txt
-  - pip install coveralls
+  - pip install -e git+https://github.com/coveralls-clients/coveralls-python.git#egg=coveralls
 
 script:
   - pytest --cov-report= --cov=data_loader --cov-config .coveragerc
