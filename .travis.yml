@@ -9,7 +9,7 @@ install:
   - pip install -r requirements-dev.txt
 
 script:
-  - pytest tests/ --cov==data_loader
+  - pytest tests --cov=data_loader
 
 after_success:
   - CI=true TRAVIS=true coveralls
