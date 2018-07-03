@@ -7,10 +7,9 @@ python:
 
 install:
   - pip install -r requirements-dev.txt
-  - pip install coveralls
 
 script:
-  - pytest tests/ --cov=data_loader
+  - pytest tests --cov=data_loader
 
 after_success:
-    - coveralls
+  - CI=true TRAVIS=true coveralls

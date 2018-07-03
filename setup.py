@@ -44,6 +44,8 @@ def get_version():
 setup(
     name='data-loader',
     version=get_version(),
+    author='Aleksei Shonenkov',
+    author_email='shonenkov@phystech.edu',
     description='Data loader.',
     packages=['data_loader'],
     install_requires=get_requirements(),
