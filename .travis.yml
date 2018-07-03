@@ -1,0 +1,20 @@
+sudo: false
+
+language: python
+
+python:
+  - 3.6
+
+install:
+  - pip install -r requirements-dev.txt
+  - pip install coveralls
+
+script:
+  - coverage run --source=data_loader pytest tests/
+
+after_success:
+  - coveralls
+
+branches:
+  except:
+    - master
