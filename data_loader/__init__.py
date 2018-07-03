@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .banki_ru import BankiRuLoader
+from .lenta_ru import LentaRuLoader
 
-__all__ = ['BankiRuLoader']
-__version__ = '0.1.1'
+__all__ = ['BankiRuLoader', 'LentaRuLoader']
+__version__ = '0.2.0'

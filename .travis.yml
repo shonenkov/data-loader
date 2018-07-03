@@ -10,11 +10,7 @@ install:
   - pip install coveralls
 
 script:
-  - coverage run --source=data_loader pytest tests/
+  - pytest --cov=data_loader tests
 
 after_success:
-  - coveralls
-
-branches:
-  except:
-    - master
+  - CI=true TRAVIS=true coveralls

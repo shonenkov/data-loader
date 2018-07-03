@@ -1,5 +1,13 @@
 CHANGELOG
 =========
+
+0.2.0-rc
+-----
+- base class ArticleLoader
+- multiprocessing
+- add lenta ru
+- add tests
+
 0.1.0
 -----
 - fix bug with global logger
