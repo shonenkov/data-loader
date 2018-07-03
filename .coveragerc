@@ -1,5 +1,5 @@
 [run]
-include = */data_loader/*
+include = */data-loader/*
 omit = tests/*
 
 [report]
