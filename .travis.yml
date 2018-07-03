@@ -7,10 +7,10 @@ python:
 
 install:
   - pip install -r requirements-dev.txt
-  - pip install -e git+https://github.com/coveralls-clients/coveralls-python.git#egg=coveralls
+  - pip install coveralls
 
 script:
   - pytest --cov-report= --cov=data_loader --cov-config .coveragerc
 
 after_success:
-  - CI=true TRAVIS=true coveralls
+  - CI=true TRAVIS=true coveralls --verbose
