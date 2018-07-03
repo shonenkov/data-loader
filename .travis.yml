@@ -7,10 +7,6 @@ python:
 
 install:
   - pip install -r requirements-dev.txt
-  - pip install coveralls
 
 script:
-  - coverage run --source=data_loader pytest tests/
-
-after_success:
-  - coveralls
+  - pytest tests/ --cov=data_loader
