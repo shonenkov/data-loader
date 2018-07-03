@@ -1,7 +1,6 @@
 # Data Loader #
 
 [![Build Status](https://api.travis-ci.com/shonenkov/data-loader.svg?branch=develop)](https://travis-ci.com/shonenkov/data-loader)
-
 [![Coverage Status](https://coveralls.io/repos/github/shonenkov/data-loader/badge.svg?branch=develop)](https://coveralls.io/github/shonenkov/data-loader)
 
 # Installing for version 0.0.1: #
