@@ -104,6 +104,7 @@ class ArticleLoader:
             url = self.url_template.format(year=year, month=month, day=day)
 
             if url in self.url_cache:
+                self.preparing_progress += 1
                 continue
 
             await self.queue.put((self.PREPARE, (url, year, month, day)))
@@ -120,6 +121,7 @@ class ArticleLoader:
 
             url = article['url']
             if url in self.url_cache:
+                self.loading_progress += 1
                 continue
 
             await self.queue.put((self.LOAD, (url, i)))
@@ -162,6 +164,7 @@ class ArticleLoader:
 
         print(f'\r{self.preparing_progress} from {self.preparing_end} days', end='')
         if self.preparing_progress == self.preparing_end:
+            self.preparing_progress += 1
             print(f'\nPreparing {self.NAME} {self.year} finished!\n')
 
     async def get_load(self, url, i):
@@ -187,6 +190,7 @@ class ArticleLoader:
 
         print(f'\r{self.loading_progress} from {self.loading_end} articles', end='')
         if self.loading_progress == self.loading_end:
+            self.loading_progress += 1
             print(f'\nLoading {self.NAME} {self.year} finished!\n')
 
     async def get_soup(self, url):
