@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-0.2.0-rc
+0.2.0
 -----
 - base class ArticleLoader
 - multiprocessing
