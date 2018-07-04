@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.2.1-rc
+-----
+- add tests
+
 0.2.0
 -----
 - base class ArticleLoader
