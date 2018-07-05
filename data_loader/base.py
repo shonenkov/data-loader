@@ -209,8 +209,8 @@ class ArticleLoader:
                     raise ValueError
             except ValueError:
                 continue
-            day = str(day) if len(str(day)) == 2 else f'0{day}'
-            month = str(month) if len(str(month)) == 2 else f'0{month}'
+            day = str(day).zfill(2)
+            month = str(month).zfill(2)
             year = str(year)
             all_dates.append([day, month, year])
         return all_dates
