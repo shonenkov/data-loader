@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import pytest
 import asyncio
+import re
 from os.path import join
 
 from bs4 import BeautifulSoup
 
 from data_loader import LentaRuLoader
-from .conftest import TEST_ROOT
+from tests.conftest import TEST_ROOT, WORD_PATTERN
 
 
 @pytest.mark.asyncio
@@ -24,14 +25,14 @@ async def test_get_article_text(soup_path, expected_text_path, lenta_ru_loader):
     soup = BeautifulSoup(open(soup_path, 'r'), 'html.parser')
     expected_text = open(expected_text_path, 'r').read()
     text = await lenta_ru_loader.get_article_text(soup)
-    assert text.strip() == expected_text.strip()
+    assert re.findall(WORD_PATTERN, text) == re.findall(WORD_PATTERN, expected_text)
 
 
 @pytest.mark.asyncio
 async def test_lentaru_loader():
     async def my_get_soup(url):
         return BeautifulSoup(
-            open(f'/tmp/test-data-loader-resources/articles/{url.replace("/", "-")}.html', 'r'), 'html.parser'
+            open(f'/tmp/test-data-loader-resources/{url.replace("/", "-")}.html', 'r'), 'html.parser'
         )
 
     def _my_get_all_dates():

@@ -25,7 +25,7 @@ class BankiRuLoader(ArticleLoader):
 
         one_day_articles = []
         for a in all_a:
-            if 'text-list-link' in a.attrs.get('class', []):
+            if 'text-list-link' in a.attrs.get('class', []) and a['href'].startswith('/news/lenta/'):
                 one_day_articles.append({
                     'url': a['href'],
                     'header': a.text,
