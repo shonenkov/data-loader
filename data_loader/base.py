@@ -3,7 +3,8 @@ import json
 import asyncio
 import itertools as it
 from os import makedirs
-from os.path import join, exists
+from os.path import join, exists, basename, dirname
+from glob import glob
 from uuid import uuid4
 from time import sleep
 from datetime import datetime
@@ -225,5 +226,130 @@ class ArticleLoader:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.gather(
             self.prepare(), *[self.get() for _ in range(self.n_processes)]))
+        loop.run_until_complete(asyncio.gather(
+            self.load(), *[self.get() for _ in range(self.n_processes)]))
+
+
+class DataExternalIDLoader:
+
+    NAME = 'data_external_id'
+
+    LOAD = 'load'
+    KILL = 'kill'
+
+    def __init__(self, *, ids, sub_url, save, bs4_features, data_folder_path, data_folder_deep, queue_maxsize,
+                 n_processes, log_file_path=None):
+        """
+        Base class for loading data from external_id, that have one page structure.
+        :param ids: iterable object with ids
+        :param sub_url: template url with external_id, example: 'https://otvet.mail.ru/question/{external_id}'
+        :param save: bool, True - save data, False - don't
+        :param bs4_features: 'lxml'/'html'
+        :param data_folder_path: folder for load data
+        :param data_folder_deep: 1000**n, n - count of separation data
+        :param queue_maxsize: maxsize of queue for tasks
+        :param n_processes: processes count
+        :param log_file_path: default as {NAME}.log
+        """
+
+        self.data_folder_path = data_folder_path
+        self.data_folder_deep = data_folder_deep
+        self.bs4_features = bs4_features
+        self.n_processes = n_processes
+        self.ids = ids
+        self.loaded_external_ids = {basename(path)[:-5] for path in glob(
+            join(data_folder_path, *['*' for _ in range(data_folder_deep)], '*.json')
+        )}
+        self.save = save
+        self.loading_progress = 0
+        self.queue = asyncio.Queue(maxsize=queue_maxsize)
+        self.sub_url = sub_url
+        self.log_path = log_file_path if log_file_path else f'{self.NAME}.log'
+
+    async def load(self):
+        print('\nLoading...')
+
+        for external_id in self.ids:
+            print(self.loading_progress, end='\r')
+            if external_id in self.loaded_external_ids:
+                self.loading_progress += 1
+                continue
+            await self.queue.put((self.LOAD, (external_id,)))
+
+        for _ in range(self.n_processes):
+            await self.queue.put((self.KILL, None))
+
+    async def get(self):
+        while True:
+            command, data = await self.queue.get()
+            if command == self.LOAD:
+                await self.get_load(*data)
+            else:
+                break
+
+    async def get_data(self, external_id, soup):
+        """ Method for parse data from soup. Return JSON  """
+        raise NotImplementedError
+
+    async def get_load(self, external_id):
+
+        self.loading_progress += 1
+
+        soup = await self.get_soup(external_id)
+        if not soup:
+            await self._log('WARNING', f'No soup for external_id "{external_id}"')
+            return
+
+        data = await self.get_data(external_id, soup)
+        if not data:
+            await self._log('WARNING', f'No text for external_id "{external_id}"')
+            return
+
+        if self.save:
+            name = [f'{external_id}.json']
+            for _ in range(self.data_folder_deep):
+                name.append(str(external_id // 1000 % 1000))
+                external_id = external_id // 1000
+
+            path = join(*name[::-1])
+            sub_folder_path = dirname(join(self.data_folder_path, path))
+            if not exists(sub_folder_path):
+                makedirs(sub_folder_path)
+
+            self._save_json(data, path)
+            await self._log('INFO', f'Data saved as "{path}".')
+
+    async def get_soup(self, external_id):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url=self.sub_url.format(external_id=external_id), verify_ssl=False) \
+                        as raw_response:
+                    if raw_response.status == 404:
+                        await session.close()
+                        return
+                    elif raw_response.status != 200:
+                        print('Bad status! Use correct timeout.')
+                        await self._log('ERROR', f'Bad status from server! "{external_id}"')
+                        await session.close()
+                        return
+                    content = await raw_response.content.read()
+
+            self.loaded_external_ids.add(external_id)
+            return BeautifulSoup(content, self.bs4_features)
+        except Exception as e:
+            await self._log('ERROR', f'{e, type(e)}')
+
+    async def _log(self, status, msg):
+        with open(self.log_path, 'a+') as logger:
+            logger.write(f'{status}:{msg}\n')
+
+    def _save_json(self, article, name):
+        file = open(join(self.data_folder_path, name), 'w')
+        json.dump(article, file, ensure_ascii=False)
+        file.close()
+
+    def run(self):
+        """ Main method """
+        loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.gather(
             self.load(), *[self.get() for _ in range(self.n_processes)]))
