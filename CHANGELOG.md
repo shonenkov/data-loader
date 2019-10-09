@@ -1,9 +1,10 @@
 CHANGELOG
 =========
 
-0.2.1-rc
------
+0.3.0-rc
+--------
 - add tests
+- add mail_ru loader
 
 0.2.0
 -----
