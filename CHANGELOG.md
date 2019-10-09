@@ -5,6 +5,7 @@ CHANGELOG
 -----
 - add tests
 - add mail_ru loader
+- add runners
 
 0.2.0
 -----
